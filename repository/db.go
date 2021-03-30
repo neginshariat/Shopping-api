@@ -10,13 +10,13 @@ import (
 	_ "github.com/lib/pq"
 )
 
-type StoreRepository interface {
+type Repository interface {
 	ShowAllStock() ([]models.Store, error)
-	ShowByCathegory(cat string) (models.Store, error)
+	//ShowByCathegory(cat string) (models.Store, error)
 	ShowOrdeById(id int64) (models.Order, error)
 	CreateOrder(order models.Order) int64
 	EditOrder(id int64, order models.Order) int64
-	DeleteOrder(id int64, order models.Order) int64
+	DeleteOrder(id int64) int64
 }
 
 type stock struct {
@@ -28,7 +28,7 @@ func getDbUrl(conf *config.Config) string {
 	return dbURL
 }
 
-func StockRepository(db *sql.DB, conf *config.Config) *stock {
+func StockRepository(conf *config.Config) *stock {
 	dbName := getDbUrl(conf)
 	db, err := sql.Open("postgres", dbName)
 	if err != nil {
@@ -67,7 +67,8 @@ func (s *stock) ShowAllStock() ([]models.Store, error) {
 	}
 	return stock, nil
 }
-func (s *stock) ShowByCathegory(cat models.Store) (models.Store, error) {
+
+/* func (s *stock) ShowByCathegory(cat models.Store) (models.Store, error) {
 
 	var store models.Store
 
@@ -86,7 +87,7 @@ func (s *stock) ShowByCathegory(cat models.Store) (models.Store, error) {
 	}
 	return store, nil
 
-}
+} */
 func (s *stock) ShowOrderById(id int64) (models.Order, error) {
 
 	var order models.Order

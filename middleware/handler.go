@@ -13,7 +13,7 @@ import (
 )
 
 type controller struct {
-	sr repository.StoreRepository
+	sr repository.Repository
 }
 
 func NewController() *controller {
@@ -84,7 +84,6 @@ func (c *controller) UpdateOrder(w http.ResponseWriter, r *http.Request) {
 
 	id, err := strconv.Atoi(params["id"])
 	if err != nil {
-		//log.Fatal("Unable to convert string to int. %v", err)
 		fmt.Sprintf("Unable to convert string to int. %v", err)
 	}
 
