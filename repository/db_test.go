@@ -78,17 +78,19 @@ func TestShowOrderById(t *testing.T) {
 }
 
 func TestCreateOrder(t *testing.T) {
-
 	db, mock := NewMock()
 	repo := &stock{db}
 	defer func() {
 		db.Close()
 	}()
 
-	//query := "INSERT INTO order (orpants, orshoes, ortshirt ) VALUES ( ?, ?, ? ) RETURNING orid"
+	//query := "INSERT INTO order (orpants, orshoes, ortshirt) VALUES ( $1, $2, $3 ) RETURNING orid"
+	query := "^INSERT INTO order*"
 
-	//prep := mock.ExpectPrepare(query)
-	mock.ExpectExec("INSERT INTO order").WithArgs("short", "sport", "green").WillReturnResult(sqlmock.NewResult(1, 1))
+	prep := mock.ExpectPrepare(query)
+	prep.ExpectExec().
+		WithArgs("short", "sport", "green").
+		WillReturnResult(sqlmock.NewResult(1, 1))
 
 	order := repo.CreateOrder(*or)
 	assert.NotNil(t, order)

@@ -110,17 +110,22 @@ func (s *stock) ShowOrderById(id int64) (models.Order, error) {
 }
 func (s *stock) CreateOrder(order models.Order) int64 {
 
-	sqlStatement := "INSERT INTO order (orpants, orshoes, ortshirt ) VALUES ( ?, ?, ? )"
+	insert, err := s.db.Prepare("INSERT INTO order (orpants, orshoes, ortshirt ) VALUES ( $1, $2, $3 ) RETURNING orid")
+	if err != nil {
+		log.Fatalf("invalid insert query")
+	}
 	//"INSERT INTO order \\(orpants, orshoes, ortshirt\\) VALUES \\(\\?, \\?, \\?\\) RETURNING orid"
 
-	var id int64
-
-	err := s.db.QueryRow(sqlStatement, order.Pants, order.Shoes, order.TShirts).Scan(&id)
+	res, err := insert.Exec(order.Pants, order.Shoes, order.TShirts)
 	if err != nil {
 		log.Fatalf("Unable to execute the query. %v", err)
 	}
-	fmt.Printf("inserted a single record %v", id)
 
+	id, err := res.LastInsertId()
+	if err != nil {
+		log.Fatalf("unable to retreive id from last inserted record. %v", err)
+	}
+	fmt.Printf("inserted a single record %v", id)
 	return id
 }
 func (s *stock) EditOrder(id int64, order models.Order) int64 {
