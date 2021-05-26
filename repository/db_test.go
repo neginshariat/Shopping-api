@@ -102,10 +102,9 @@ func TestDeleteOrder(t *testing.T) {
 		db.Close()
 	}()
 
-	query := "DELETE FROM order WHERE orid = \\?"
+	query := "DELETE FROM order WHERE orid = ?"
 
-	prep := mock.ExpectPrepare(query)
-	prep.ExpectExec().WithArgs(or.OrID).WillReturnResult(sqlmock.NewResult(0, 1))
+	mock.ExpectExec(query).WithArgs(or.OrID).WillReturnResult(sqlmock.NewResult(0, 1))
 
 	order := repo.DeleteOrder(or.OrID)
 	assert.NotEmpty(t, order)
