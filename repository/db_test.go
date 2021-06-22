@@ -43,6 +43,8 @@ func TestShowAllStock(t *testing.T) {
 	assert.NotEmpty(t, order)
 	assert.NoError(t, err)
 	assert.Len(t, order, 1)
+	// TODO: Here is would be good to also check that the expected order
+	// content is returned.
 }
 
 /* func TestShowByCathegory(t *testing.T) {
@@ -75,23 +77,29 @@ func TestShowOrderById(t *testing.T) {
 	order, err := repo.ShowOrderById(or.OrID)
 	assert.NotNil(t, order)
 	assert.NoError(t, err)
+	// TODO: Same here, we should validate that the expected content of the
+	// order is returned.
 }
 
 func TestCreateOrder(t *testing.T) {
-
 	db, mock := NewMock()
 	repo := &stock{db}
 	defer func() {
 		db.Close()
 	}()
 
-	//query := "INSERT INTO order (orpants, orshoes, ortshirt ) VALUES ( ?, ?, ? ) RETURNING orid"
+	//query := "INSERT INTO order (orpants, orshoes, ortshirt) VALUES ( $1, $2, $3 ) RETURNING orid"
+	query := "^INSERT INTO order*"
 
-	//prep := mock.ExpectPrepare(query)
-	mock.ExpectExec("INSERT INTO order").WithArgs("short", "sport", "green").WillReturnResult(sqlmock.NewResult(1, 1))
+	prep := mock.ExpectPrepare(query)
+	prep.ExpectExec().
+		WithArgs("short", "sport", "green").
+		WillReturnResult(sqlmock.NewResult(1, 1))
 
 	order := repo.CreateOrder(*or)
 	assert.NotNil(t, order)
+	// TODO: Same here, we should validate that the expected content of the
+	// order is returned.
 }
 func TestDeleteOrder(t *testing.T) {
 	db, mock := NewMock()
@@ -100,10 +108,9 @@ func TestDeleteOrder(t *testing.T) {
 		db.Close()
 	}()
 
-	query := "DELETE FROM order WHERE orid = \\?"
+	query := "DELETE FROM order WHERE orid = ?"
 
-	prep := mock.ExpectPrepare(query)
-	prep.ExpectExec().WithArgs(or.OrID).WillReturnResult(sqlmock.NewResult(0, 1))
+	mock.ExpectExec(query).WithArgs(or.OrID).WillReturnResult(sqlmock.NewResult(0, 1))
 
 	order := repo.DeleteOrder(or.OrID)
 	assert.NotEmpty(t, order)
