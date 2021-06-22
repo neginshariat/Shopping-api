@@ -43,6 +43,8 @@ func TestShowAllStock(t *testing.T) {
 	assert.NotEmpty(t, order)
 	assert.NoError(t, err)
 	assert.Len(t, order, 1)
+	// TODO: Here is would be good to also check that the expected order
+	// content is returned.
 }
 
 /* func TestShowByCathegory(t *testing.T) {
@@ -75,6 +77,8 @@ func TestShowOrderById(t *testing.T) {
 	order, err := repo.ShowOrderById(or.OrID)
 	assert.NotNil(t, order)
 	assert.NoError(t, err)
+	// TODO: Same here, we should validate that the expected content of the
+	// order is returned.
 }
 
 func TestCreateOrder(t *testing.T) {
@@ -94,6 +98,8 @@ func TestCreateOrder(t *testing.T) {
 
 	order := repo.CreateOrder(*or)
 	assert.NotNil(t, order)
+	// TODO: Same here, we should validate that the expected content of the
+	// order is returned.
 }
 func TestDeleteOrder(t *testing.T) {
 	db, mock := NewMock()
