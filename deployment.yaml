@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shopping-app
+  labels:
+    application: shopping-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      application: shopping-app
+  template:
+    metadata:
+      labels:
+        application: shopping-app
+    spec:
+      containers:
+      - name: main
+        image: 59625962/shopping-app:v1
+        imagePullPolicy: Always
+        env:
+        - name: DB_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: app-owner.mentoring-shopping-app.credentials
+              key: username
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: app-owner.mentoring-shopping-app.credentials
+              key: password 
+        - name: DB_HOST
+          value: mentoring-shopping-app
+        - name : DB_NAME
+          value: shoppingdb
+        - name: DB_SSL_MODE
+          value: enable    
+        ports:
+        - containerPort: 8080
+        #readinessProbe:
+          #httpGet:
+          #  path: /health
+          #  port: 8080
+        resources:
+          requests:
+            cpu: 5m
+            memory: 25Mi
+          limits:
+            cpu: 5m
+            memory: 25Mi

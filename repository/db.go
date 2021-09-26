@@ -12,19 +12,20 @@ import (
 
 type Repository interface {
 	ShowAllStock() ([]models.Store, error)
-	//ShowByCathegory(cat string) (models.Store, error)
-	ShowOrdeById(id int64) (models.Order, error)
+	ShowAllOrders() ([]models.Order, error)
+	ShowOrderById(id int64) (models.Order, error)
 	CreateOrder(order models.Order) int64
-	EditOrder(id int64, order models.Order) int64
+	EditOrder(order models.Order) int64
 	DeleteOrder(id int64) int64
 }
 
 type stock struct {
-	db *sql.DB
+	DB *sql.DB
 }
 
 func getDbUrl(conf *config.Config) string {
-	dbURL := fmt.Sprintf("user=%s password=%s dbname=%s host=%s port=%s sslmode=%s", conf.DatabaseUser, conf.DatabasePassword, conf.DatabaseName, conf.DatabaseHost, conf.DatabasePort, conf.DatabaseSSLMode)
+	//DB_URL=postgres://root:postgres@postgres:5432/shoppingdb?sslmode=disable
+	dbURL := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=%s", conf.DatabaseUser, conf.DatabasePassword, conf.DatabaseHost, conf.DatabasePort, conf.DatabaseName, conf.DatabaseSSLMode)
 	return dbURL
 }
 
@@ -41,7 +42,7 @@ func StockRepository(conf *config.Config) *stock {
 	}
 	fmt.Println("connected successfully")
 
-	return &stock{db: db}
+	return &stock{DB: db}
 }
 
 func (s *stock) ShowAllStock() ([]models.Store, error) {
@@ -49,7 +50,7 @@ func (s *stock) ShowAllStock() ([]models.Store, error) {
 	sqlStatement := `SELECT  pants, shoes, tshirts FROM store`
 
 	var stock []models.Store
-	row, err := s.db.Query(sqlStatement)
+	row, err := s.DB.Query(sqlStatement)
 	if err != nil {
 		log.Fatalf("Unable to execute the query %v", err)
 	}
@@ -67,40 +68,42 @@ func (s *stock) ShowAllStock() ([]models.Store, error) {
 	}
 	return stock, nil
 }
+func (s *stock) ShowAllOrders() ([]models.Order, error) {
 
-/* func (s *stock) ShowByCathegory(cat models.Store) (models.Store, error) {
+	sqlStatement := `SELECT orid, pants,shoes, tshirts FROM order`
 
-	var store models.Store
-
-	sqlStatement := `SELECT ? FROM store`
-
-	row := s.db.QueryRow(sqlStatement, cat)
-
-	err := row.Scan(&store.Pants, &store.Shoes, &store.TShirts)
-	switch err {
-	case sql.ErrNoRows:
-		fmt.Println("No rows were returned!")
-	case nil:
-		fmt.Println("that is your order", store)
-	default:
-		log.Fatalf("Unable to scan the row. %v", err)
+	var orders []models.Order
+	row, err := s.DB.Query(sqlStatement)
+	if err != nil {
+		log.Fatalf("Unable to execute the query %v", err)
 	}
-	return store, nil
+	defer row.Close()
 
-} */
+	for row.Next() {
+		var orderHolder models.Order
+		err := row.Scan(&orderHolder.OrID, &orderHolder.Pants, &orderHolder.Shoes, &orderHolder.TShirts)
+		if err != nil {
+			log.Fatalf("Unable to scan the row. %v", err)
+		}
+		defer row.Close()
+		orders = append(orders, orderHolder)
+
+	}
+	return orders, nil
+}
+
 func (s *stock) ShowOrderById(id int64) (models.Order, error) {
 
 	var order models.Order
 
-	sqlStatement := `SELECT orid, pants,shoes, tshirts FROM order WHERE orid = ?`
+	sqlStatement := `SELECT orid, pants,shoes, tshirts FROM order WHERE orid = $1`
 
-	row := s.db.QueryRow(sqlStatement, id)
+	row := s.DB.QueryRow(sqlStatement, id)
 
 	err := row.Scan(&order.OrID, &order.Pants, &order.Shoes, &order.TShirts)
 	switch err {
 	case sql.ErrNoRows:
 		fmt.Println("No rows were returned!")
-		//fmt.Println(w, http.StatusBadRequest, "No entry found with the id="+id)
 	case nil:
 		fmt.Println("that is your order", order)
 	default:
@@ -110,23 +113,40 @@ func (s *stock) ShowOrderById(id int64) (models.Order, error) {
 }
 func (s *stock) CreateOrder(order models.Order) int64 {
 
-	sqlStatement := "INSERT INTO order (orpants, orshoes, ortshirt ) VALUES ( ?, ?, ? )"
-	//"INSERT INTO order \\(orpants, orshoes, ortshirt\\) VALUES \\(\\?, \\?, \\?\\) RETURNING orid"
+	/* 	sqlStatement := "INSERT INTO order (pants, shoes, tshirt ) VALUES ($1, $2, $3) RETURNING orid"
 
-	var id int64
+	   	var id int64
 
-	err := s.db.QueryRow(sqlStatement, order.Pants, order.Shoes, order.TShirts).Scan(&id)
+	   	err := s.db.QueryRow(sqlStatement, order.Pants, order.Shoes, order.TShirts).Scan(&id)
+	   	if err != nil {
+	   		log.Fatalf("Unable to execute the query. %v", err)
+	   	} */
+	insert, err := s.DB.Prepare("INSERT INTO order (orpants, orshoes, ortshirt ) VALUES ($1, $2, $3) RETURNING orid")
+	if err != nil {
+		log.Fatalf("invalid insert query")
+	}
+
+	res, err := insert.Exec(order.Pants, order.Shoes, order.TShirts)
 	if err != nil {
 		log.Fatalf("Unable to execute the query. %v", err)
+	}
+
+	id, err := res.LastInsertId()
+	if err != nil {
+		log.Fatalf("unable to retreive id from last inserted record. %v", err)
 	}
 	fmt.Printf("inserted a single record %v", id)
 
 	return id
 }
-func (s *stock) EditOrder(id int64, order models.Order) int64 {
+func (s *stock) EditOrder(order models.Order) int64 {
 
-	sqlStatement := `UPDATE order SET orpants=$2, orshoes=$3, ortshirt=$4 WHERE orid=$1`
-	res, err := s.db.Exec(sqlStatement, id, order.Pants, order.Shoes, order.TShirts)
+	stmn, err := s.DB.Prepare("UPDATE order SET pants=$1, shoes=$2, tshirt=$3 WHERE orid=$4")
+	if err != nil {
+		log.Fatalf("invalid insert query")
+	}
+
+	res, err := stmn.Exec(order.Pants, order.Shoes, order.TShirts, order.OrID)
 	if err != nil {
 		log.Fatal("Unable to execute the query.", err)
 	}
@@ -140,8 +160,8 @@ func (s *stock) EditOrder(id int64, order models.Order) int64 {
 }
 func (s *stock) DeleteOrder(id int64) int64 {
 
-	sqlStatement := `DELETE FROM order WHERE orid = ?`
-	res, err := s.db.Exec(sqlStatement, id)
+	sqlStatement := `DELETE FROM order WHERE orid = $1`
+	res, err := s.DB.Exec(sqlStatement, id)
 	if err != nil {
 		log.Fatal("Unable to delete the query.", err)
 	}

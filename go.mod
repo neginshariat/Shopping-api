@@ -7,5 +7,6 @@ require (
 	github.com/gorilla/mux v1.8.0
 	github.com/lib/pq v1.10.0
 	github.com/stretchr/testify v1.7.0
+	gopkg.in/go-playground/assert.v1 v1.2.1
 	honnef.co/go/tools v0.1.2
 )
