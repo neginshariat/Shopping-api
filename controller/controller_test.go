@@ -6,11 +6,12 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"shopping-app/middleware"
-	"shopping-app/models"
 	"testing"
 
 	"github.com/stretchr/testify/require"
+
+	"shopping-app/middleware"
+	"shopping-app/models"
 )
 
 type MockDB struct {
@@ -65,7 +66,7 @@ func TestCreateNewOrder(t *testing.T) {
 	req, err := http.NewRequest("POST", "/shop/make", bytes.NewBuffer(data))
 	require.NoError(t, err)
 
-	r := shoppingController.Router(order)
+	r := shoppingController.Router()
 	r.ServeHTTP(res, req)
 
 	fmt.Println(req)
@@ -92,7 +93,7 @@ func TestShowAllOrders(t *testing.T) {
 	res := httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", "/shop/order", nil)
 
-	r := Router(shoppingController)
+	r := shoppingController.Router()
 	r.ServeHTTP(res, req)
 
 	require.Equal(t, res.Code, http.StatusOK)
@@ -109,7 +110,7 @@ func TestShowTheOrderById(t *testing.T) {
 	res := httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", "/shop/{id}", bytes.NewBuffer(data))
 
-	r := Router(shoppingController)
+	r := shoppingController.Router()
 	r.ServeHTTP(res, req)
 
 	require.Equal(t, res.Code, http.StatusOK)
@@ -128,7 +129,7 @@ func TestUpdateOrder(t *testing.T) {
 	res := httptest.NewRecorder()
 	req, _ := http.NewRequest("PUT", "/shop/edit", bytes.NewBuffer(data))
 
-	r := Router(shoppingController)
+	r := shoppingController.Router()
 	r.ServeHTTP(res, req)
 
 	require.Equal(t, res.Code, http.StatusOK)
@@ -143,7 +144,7 @@ func TestDeleteTheOrder(t *testing.T) {
 	res := httptest.NewRecorder()
 	req, _ := http.NewRequest("DELETE", "/shop/delete", bytes.NewBuffer(data))
 
-	r := Router(shoppingController)
+	r := shoppingController.Router()
 	r.ServeHTTP(res, req)
 
 	require.Equal(t, res.Code, http.StatusOK)
