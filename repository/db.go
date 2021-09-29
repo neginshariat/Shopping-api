@@ -52,6 +52,9 @@ func (s *stock) ShowAllStock() ([]models.Store, error) {
 	var stock []models.Store
 	row, err := s.DB.Query(sqlStatement)
 	if err != nil {
+		// TODO: It's better to return nil, err here.
+		// log.Fatal should only be used from main() function
+		// Same for the cases below where log.Fatal is used.
 		log.Fatalf("Unable to execute the query %v", err)
 	}
 	defer row.Close()
@@ -113,6 +116,7 @@ func (s *stock) ShowOrderById(id int64) (models.Order, error) {
 }
 func (s *stock) CreateOrder(order models.Order) int64 {
 
+
 	/* 	sqlStatement := "INSERT INTO order (pants, shoes, tshirt ) VALUES ($1, $2, $3) RETURNING orid"
 
 	   	var id int64
@@ -126,10 +130,8 @@ func (s *stock) CreateOrder(order models.Order) int64 {
 		log.Fatalf("invalid insert query")
 	}
 
-	res, err := insert.Exec(order.Pants, order.Shoes, order.TShirts)
-	if err != nil {
-		log.Fatalf("Unable to execute the query. %v", err)
-	}
+
+
 
 	id, err := res.LastInsertId()
 	if err != nil {
@@ -137,14 +139,18 @@ func (s *stock) CreateOrder(order models.Order) int64 {
 	}
 	fmt.Printf("inserted a single record %v", id)
 
-	return id
-}
+
+
+
 func (s *stock) EditOrder(order models.Order) int64 {
 
 	stmn, err := s.DB.Prepare("UPDATE order SET pants=$1, shoes=$2, tshirt=$3 WHERE orid=$4")
 	if err != nil {
 		log.Fatalf("invalid insert query")
 	}
+
+
+
 
 	res, err := stmn.Exec(order.Pants, order.Shoes, order.TShirts, order.OrID)
 	if err != nil {
