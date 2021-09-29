@@ -1,0 +1,23 @@
+{
+  "store": [
+    {
+      "pants": "blue",
+      "shoes": "sport",
+      "tshirts": "red"
+    }
+  ],
+  "order": [
+    {
+      "orid": 1,
+      "pants": "blue",
+      "shoes": "green",
+      "tshirts": "green"
+    },
+    {
+      "orid": 2,
+      "pants": "blue",
+      "shoes": "high heels",
+      "tshirts": "green"
+    }
+  ]
+}
