@@ -5,7 +5,7 @@ import (
 )
 
 var (
-	apiUrl           = "http://localhost:8080"
+	apiUrl           = "postgres://root:postgres@postgres:5432/shoppingdb?sslmode=disable"
 	port             = "8181"
 	databaseHost     = "localhost"
 	databasePort     = "5432"
