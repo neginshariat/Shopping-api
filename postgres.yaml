@@ -1,0 +1,15 @@
+kind: "postgresql"
+apiVersion: "acid.zalan.do/v1"
+metadata:
+  name: mentoring-shopping-app
+spec:
+  teamId: "mentoring"
+  volume:
+    size: "5Gi"
+  numberOfInstances: 1
+  users:
+    app_owner: []
+  databases:
+    shoppingapp: app_owner     
+  postgresql:
+    version: "12" 

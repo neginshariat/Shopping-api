@@ -1,0 +1,31 @@
+kind: "postgresql"
+apiVersion: "acid.zalan.do/v1"
+
+metadata:
+    # name must be composed of: {TEAMID}-{NAME}
+    name: "acid-application1-db"
+    namespace: "default"
+
+spec:
+    teamId: "acid"
+    volume:
+        size: "10Gi"
+    numberOfInstances: 1
+
+    users:
+        # map of application users and roles
+        # user to run migrations
+        app_owner: []
+        # application user
+        app_writer: []
+        # a role to assign to read-only users using GRANT
+        data_reader:
+          - NOLOGIN
+
+    databases:
+        # map database name -> owning role, database name must not contain "-"
+        test_application_db: app_owner
+
+    # possible versions are "13", "12"
+    postgresql:
+        version: "13"
